@@ -33,7 +33,7 @@ namespace CloudSystem.Controllers
         {
         }
 
-        // PUT: api/Files/5
+        // PUT: api/Files/5/5
         [HttpPut("{id}/{key}")]
         public void Put(string id, string key, [FromBody]FileObject file)
         {
