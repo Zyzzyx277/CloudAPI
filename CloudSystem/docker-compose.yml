@@ -3,6 +3,7 @@ version: '3.9'
 services:
   # ASP.NET Core API service
   api:
+    restart: unless-stopped
     image: mcr.microsoft.com/dotnet/aspnet:7.0
     restart: unless-stopped
     volumes:
