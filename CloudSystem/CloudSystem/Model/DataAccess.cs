@@ -60,7 +60,7 @@ public class DataAccess
         return FileObject.FileDb.First(p => p.IdFile == id);
     }
     
-    public static IEnumerable<byte[]> GetFileList(string id)
+    public static IEnumerable<string> GetFileList(string id)
     {
         return FileObject.FileDb.Where(p => p.IdUser == id).Select(p => p.Name);
     }

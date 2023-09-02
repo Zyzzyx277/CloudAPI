@@ -16,7 +16,7 @@ namespace CloudSystem.Controllers
     {
         // GET: api/Files/GetList/5
         [HttpGet("{id}")]
-        public IEnumerable<byte[]> Get(string id)
+        public IEnumerable<string> Get(string id)
         {
             return DataAccess.GetFileList(id);
         }

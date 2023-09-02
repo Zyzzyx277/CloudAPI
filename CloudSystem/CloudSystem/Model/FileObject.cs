@@ -2,12 +2,12 @@
 
 public class FileObject
 {
-    public byte[] Content { get; set; }
+    public string Content { get; set; }
     public string IdUser { get; set; }
     public string IdFile { get; set; }
-    public byte[] Name { get; set; }
+    public string Name { get; set; }
 
-    public FileObject(byte[] content, string idUser, string idFile, byte[] name)
+    public FileObject(string content, string idUser, string idFile, string name)
     {
         Content = content;
         IdUser = idUser;
