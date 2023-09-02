@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "dc5ZpT5Isfi+TWbpRwgt3pS6Vi9S/9Oeh0X3AqbV3wmESRjfzn5SDVpcZQlleoBdhV5P0iUNfjsmYpcpwHBFBw==",
+  "dgSpecHash": "iZ2EbtOaadLYjwzBvyJn97via5FEm1ms9RklyddzP7cS5Ch6vlej3XS+Uv800/ReeMB1sAfNqnEzaj9ZjA/KBQ==",
   "success": true,
-  "projectFilePath": "C:\\Users\\koron\\RiderProjects\\CloudSystem\\CloudSystem\\CloudSystem.csproj",
+  "projectFilePath": "C:\\Users\\koron\\RiderProjects\\CloudSystemGit\\CloudSystem\\CloudSystem\\CloudSystem.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\koron\\.nuget\\packages\\humanizer\\2.14.1\\humanizer.2.14.1.nupkg.sha512",
     "C:\\Users\\koron\\.nuget\\packages\\humanizer.core\\2.14.1\\humanizer.core.2.14.1.nupkg.sha512",

@@ -10113,11 +10113,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\koron\\RiderProjects\\CloudSystem\\CloudSystem\\CloudSystem.csproj",
+      "projectUniqueName": "C:\\Users\\koron\\RiderProjects\\CloudSystemGit\\CloudSystem\\CloudSystem\\CloudSystem.csproj",
       "projectName": "CloudSystem",
-      "projectPath": "C:\\Users\\koron\\RiderProjects\\CloudSystem\\CloudSystem\\CloudSystem.csproj",
+      "projectPath": "C:\\Users\\koron\\RiderProjects\\CloudSystemGit\\CloudSystem\\CloudSystem\\CloudSystem.csproj",
       "packagesPath": "C:\\Users\\koron\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\koron\\RiderProjects\\CloudSystem\\CloudSystem\\obj\\",
+      "outputPath": "C:\\Users\\koron\\RiderProjects\\CloudSystemGit\\CloudSystem\\CloudSystem\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\koron\\AppData\\Roaming\\NuGet\\NuGet.Config"
