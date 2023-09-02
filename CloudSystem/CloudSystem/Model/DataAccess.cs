@@ -55,14 +55,14 @@ public class DataAccess
         return Task.CompletedTask;
     }
 
-    public static FileObject GetFile(string id)
+    public static FileObject GetFile(string path)
     {
-        return FileObject.FileDb.First(p => p.IdFile == id);
+        return FileObject.FileDb.First(p => p.Path == path);
     }
     
     public static IEnumerable<string> GetFileList(string id)
     {
-        return FileObject.FileDb.Where(p => p.IdUser == id).Select(p => p.Name);
+        return FileObject.FileDb.Where(p => p.IdUser == id).Select(p => p.Path);
     }
 
     public static void CreateFile(string idUser, string key, FileObject file)
@@ -73,13 +73,13 @@ public class DataAccess
         FileObject.FileDb.Add(file);
     }
     
-    public static void DeleteFile(string idUser, string key, string idFile)
+    public static void DeleteFile(string idUser, string key, string path)
     {
         var user = User.UserDb.FirstOrDefault(p => p.Id == idUser);
         if (user is null) return;
         var keyLocal = user.AuthKey;
         if (keyLocal is null) return;
         if (keyLocal != key) return;
-        FileObject.FileDb.RemoveWhere(p => p.IdFile == idFile);
+        FileObject.FileDb.RemoveWhere(p => p.Path == path);
     }
 }
