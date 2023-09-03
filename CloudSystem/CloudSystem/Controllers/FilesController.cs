@@ -21,16 +21,17 @@ namespace CloudSystem.Controllers
             return DataAccess.GetFileList(id);
         }
 
-        /*// GET: api/Files/Get/5
-        [HttpGet("{id}")]
+        // GET: api/Files/Get/5
+        /*[HttpGet("{id}")]
         public FileObject Get(string id)
         {
             return DataAccess.GetFile(id);
         }*/
 
-        [HttpPost("{id}")]
-        public void Post(string id)
+        [HttpPost("{idFile}")]
+        public FileObject Post(string idFile)
         {
+            return DataAccess.GetFile(idFile);
         }
 
         // PUT: api/Files/5/5
@@ -41,7 +42,7 @@ namespace CloudSystem.Controllers
         }
 
         // DELETE: api/Files/5
-        [HttpDelete("{id}")]
+        [HttpDelete("{idFile}/{key}")]
         public void Delete(string idFile, string idUser, [FromBody]string key)
         {
             DataAccess.DeleteFile(idUser, key, idFile);
