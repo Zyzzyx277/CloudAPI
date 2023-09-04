@@ -1,6 +1,7 @@
 using CloudSystem.Model;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
+using Newtonsoft.Json;
 
 namespace CloudSystem.Controllers
 {
@@ -10,16 +11,16 @@ namespace CloudSystem.Controllers
     {
         // GET: api/Users
         [HttpGet]
-        public IEnumerable<User> Get()
+        public IEnumerable<string> Get()
         {
-            return DataAccess.GetUser();
+            return DataAccess.GetUser().Select(JsonConvert.SerializeObject);
         }
 
         // GET: api/Users/5
         [HttpGet("{id}", Name = "Get")]
-        public User Get(string id)
+        public string Get(string id)
         {
-            return DataAccess.GetUser(id);
+            return JsonConvert.SerializeObject(DataAccess.GetUser(id));
         }
 
         // POST: api/Users/5

@@ -7,6 +7,7 @@ using CloudSystem.Model;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
+using Newtonsoft.Json;
 
 namespace CloudSystem.Controllers
 {
@@ -16,7 +17,7 @@ namespace CloudSystem.Controllers
     {
         // GET: api/Files/GetList/5
         [HttpGet("{id}")]
-        public IEnumerable<string> Get(string id)
+        public string Get(string id)
         {
             return DataAccess.GetFileList(id);
         }
@@ -28,10 +29,10 @@ namespace CloudSystem.Controllers
             return DataAccess.GetFile(id);
         }*/
 
-        [HttpPost("{idFile}")]
-        public FileObject Post(string idFile)
+        [HttpPost]
+        public string Post([FromBody]string idFile)
         {
-            return DataAccess.GetFile(idFile);
+            return JsonConvert.SerializeObject(DataAccess.GetFile(idFile));
         }
 
         // PUT: api/Files/5/5
@@ -42,8 +43,8 @@ namespace CloudSystem.Controllers
         }
 
         // DELETE: api/Files/5
-        [HttpDelete("{idFile}/{key}")]
-        public void Delete(string idFile, string idUser, [FromBody]string key)
+        [HttpDelete("{idUser}/{key}/{idFile}")]
+        public void Delete(string idFile, string idUser, string key)
         {
             DataAccess.DeleteFile(idUser, key, idFile);
         }

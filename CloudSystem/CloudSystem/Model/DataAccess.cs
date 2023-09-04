@@ -1,10 +1,14 @@
-﻿namespace CloudSystem.Model;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Newtonsoft.Json;
+
+namespace CloudSystem.Model;
 
 public class DataAccess
 {
-    public static User GetUser(string id)
+    public static User? GetUser(string id)
     {
-        return User.UserDb.First(p => p.Id == id);
+        return User.UserDb.FirstOrDefault(p => p.Id == id);
     }
     
     public static IEnumerable<User> GetUser()
@@ -55,14 +59,16 @@ public class DataAccess
         return Task.CompletedTask;
     }
 
-    public static FileObject GetFile(string path)
+    public static FileObject? GetFile(string fileId)
     {
-        return FileObject.FileDb.First(p => p.Path == path);
+        return FileObject.FileDb.FirstOrDefault(p => p.Id == fileId);
     }
     
-    public static IEnumerable<string> GetFileList(string id)
+    public static string GetFileList(string id)
     {
-        return FileObject.FileDb.Where(p => p.IdUser == id).Select(p => p.Path);
+        var list = FileObject.FileDb.Where(p => p.IdUser == id);
+
+        return JsonConvert.SerializeObject(list.Select(el => (el.Path, el.Id)));
     }
 
     public static void CreateFile(string idUser, string key, FileObject file)
@@ -70,16 +76,17 @@ public class DataAccess
         var user = User.UserDb.FirstOrDefault(p => p.Id == idUser);
         if (user is null) return;
         if (user.AuthKey != key) return;
+        if (FileObject.FileDb.Any(p => p.IdUser == idUser && p.Id == file.Id)) return;
         FileObject.FileDb.Add(file);
     }
     
-    public static void DeleteFile(string idUser, string key, string path)
+    public static void DeleteFile(string idUser, string key, string idFile)
     {
         var user = User.UserDb.FirstOrDefault(p => p.Id == idUser);
         if (user is null) return;
         var keyLocal = user.AuthKey;
         if (keyLocal is null) return;
         if (keyLocal != key) return;
-        FileObject.FileDb.RemoveWhere(p => p.Path == path);
+        FileObject.FileDb.RemoveWhere(p => p.Id == idFile);
     }
 }
