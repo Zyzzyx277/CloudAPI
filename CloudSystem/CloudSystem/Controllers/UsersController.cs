@@ -11,39 +11,40 @@ namespace CloudSystem.Controllers
     {
         // GET: api/Users
         [HttpGet]
-        public IEnumerable<string> Get()
+        public async Task<IEnumerable<string>> Get()
         {
-            return DataAccess.GetUser().Select(JsonConvert.SerializeObject);
+            var users = await DataAccess.GetUser();
+            return users.Select(JsonConvert.SerializeObject);
         }
 
         // GET: api/Users/5
         [HttpGet("{id}", Name = "Get")]
-        public string Get(string id)
+        public async Task<string> Get(string id)
         {
-            return JsonConvert.SerializeObject(DataAccess.GetUser(id));
+            return JsonConvert.SerializeObject(await DataAccess.GetUser(id));
         }
 
         // POST: api/Users/5
         [HttpPost("{id}")]
-        public string Post(string id)
+        public async Task<string> Post(string id)
         {
-            return DataAccess.CreateSessionKey(id);
+            return await DataAccess.CreateSessionKey(id);
         }
 
         // PUT: api/Users
         [HttpPut]
-        public string Put([FromBody] string publicKey)
+        public async Task<string> Put([FromBody] string publicKey)
         {
             string id = Guid.NewGuid().ToString();
-            DataAccess.CreateUser(id, publicKey);
+            await DataAccess.CreateUser(id, publicKey);
             return id;
         }
 
         // DELETE: api/Users/5
         [HttpDelete("{id}/{key}")]
-        public void Delete(string id, string key)
+        public async Task Delete(string id, string key)
         {
-            DataAccess.DeleteUser(id, key);
+            await DataAccess.DeleteUser(id, key);
         }
     }
 }

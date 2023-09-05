@@ -14,6 +14,4 @@ public class FileObject
         Path = path;
         Id = id;
     }
-
-    public static HashSet<FileObject> FileDb = new();
 }

@@ -6,88 +6,81 @@ namespace CloudSystem.Model;
 
 public class DataAccess
 {
-    public static User? GetUser(string id)
+    public static async Task<User?> GetUser(string id)
     {
-        return User.UserDb.FirstOrDefault(p => p.Id == id);
+        return await StorageAccess.GetUser(id);
     }
     
-    public static IEnumerable<User> GetUser()
+    public static async Task<IEnumerable<User>> GetUser()
     {
-        return User.UserDb;
+        return await StorageAccess.GetAllUsers();
     }
     
-    public static bool CreateUser(string id, string keyHashed)
+    public static async Task<bool> CreateUser(string id, string keyHashed)
     {
-        if (User.UserDb.Any(p => p.Id == id)) return false;
-        User.UserDb.Add(new User(id, keyHashed));
+        if (await StorageAccess.GetUser(id) is not null) return false;
+        await StorageAccess.CreateUserDirectory(new User(id, keyHashed));
         return true;
     }
     
-    public static string? GetPublicKey(string id)
+    public static async Task<string?> GetPublicKey(string id)
     {
-        var user =  User.UserDb.FirstOrDefault(p => p.Id == id);
-        if (user is null) return null;
-        return user.PublicKey;
+        var user = await StorageAccess.GetUser(id);
+        return user?.PublicKey;
     }
 
-    public static void DeleteUser(string id, string key)
+    public static async Task DeleteUser(string id, string key)
     {
-        var user = User.UserDb.FirstOrDefault(p => p.Id == id);
-        if (user is null || user.AuthKey is null) return;
-        if (user.AuthKey != key) return;
-        User.UserDb.RemoveWhere(p => p.Id == id);
-        user.AuthKey = null;
+        var user = await StorageAccess.GetUser(id);
+        if(CheckAuthKey(user, key)) return;
+        StorageAccess.DeleteUserDirectory(id);
+    }
+
+    private static bool CheckAuthKey(User? user, string key)
+    {
+        if (user?.AuthKey is null) return false;
+        var userKey = user.AuthKey;
+        if (userKey.Key != key) return false;
+        return !(userKey.Stamp.Add(userKey.Span).Subtract(DateTime.Now).TotalMinutes < 0);
     }
     
-    public static string CreateSessionKey(string id)
+    public static async Task<string> CreateSessionKey(string id)
     {
         string key = Guid.NewGuid().ToString();
-        var publicKey = GetPublicKey(id);
+        var publicKey = await GetPublicKey(id);
         if (publicKey is null) return string.Empty;
         string keyEncrypted = Cryptography.Encrypt(key, publicKey);
-        var user = User.UserDb.FirstOrDefault(p => p.Id == id);
-        user.AuthKey = key;
-        Task.Run(() => DestroySessionKeyAfterTime(user, new TimeSpan(0, 15, 0), id));
+        var user = await StorageAccess.GetUser(id);
+        if (user is null) return string.Empty;
+        user.AuthKey = new User.AuthKeyClass(new TimeSpan(0, 15, 0), DateTime.Now, keyEncrypted);
         return keyEncrypted;
     }
 
-    private static Task DestroySessionKeyAfterTime(User? user, TimeSpan time, string id)
+    public static async Task<FileObject?> GetFile(string fileId, string idUser)
     {
-        Thread.Sleep(time);
-        if(user is null) return Task.CompletedTask;
-        user.AuthKey = null;
-        return Task.CompletedTask;
-    }
-
-    public static FileObject? GetFile(string fileId)
-    {
-        return FileObject.FileDb.FirstOrDefault(p => p.Id == fileId);
+        return await StorageAccess.LoadFile(idUser, fileId);
     }
     
-    public static string GetFileList(string id)
+    public static async Task<string> GetFileList(string id)
     {
-        var list = FileObject.FileDb.Where(p => p.IdUser == id);
+        var list = await StorageAccess.GetAllFiles();
 
         return JsonConvert.SerializeObject(list.Select(el => (el.Path, el.Id)));
     }
 
-    public static void CreateFile(string idUser, string key, FileObject file)
+    public static async Task CreateFile(string idUser, string key, FileObject file)
     {
-        var user = User.UserDb.FirstOrDefault(p => p.Id == idUser);
-        if (user is null) return;
-        if (user.AuthKey != key) return;
+        var user = await StorageAccess.GetUser(idUser);
+        if (!CheckAuthKey(user, key)) return;
         
-        if (FileObject.FileDb.Any(p => p.IdUser == idUser && p.Id == file.Id)) return;
-        FileObject.FileDb.Add(file);
+        if (await StorageAccess.LoadFile(idUser, file.Id) is not null) return;
+        await StorageAccess.StoreFile(file);
     }
     
-    public static void DeleteFile(string idUser, string key, string idFile)
+    public static async Task DeleteFile(string idUser, string key, string idFile)
     {
-        var user = User.UserDb.FirstOrDefault(p => p.Id == idUser);
-        if (user is null) return;
-        var keyLocal = user.AuthKey;
-        if (keyLocal is null) return;
-        if (keyLocal != key) return;
-        FileObject.FileDb.RemoveWhere(p => p.Id == idFile);
+        var user = await StorageAccess.GetUser(idUser);
+        if (!CheckAuthKey(user, key)) return;
+        StorageAccess.DeleteFile(idUser, idFile);
     }
 }

@@ -17,9 +17,9 @@ namespace CloudSystem.Controllers
     {
         // GET: api/Files/GetList/5
         [HttpGet("{id}")]
-        public string Get(string id)
+        public async Task<string> Get(string id)
         {
-            return DataAccess.GetFileList(id);
+            return await DataAccess.GetFileList(id);
         }
 
         // GET: api/Files/Get/5
@@ -29,24 +29,24 @@ namespace CloudSystem.Controllers
             return DataAccess.GetFile(id);
         }*/
 
-        [HttpPost]
-        public string Post([FromBody]string idFile)
+        [HttpPost("{idUser}")]
+        public async Task<string> Post([FromBody]string idFile, string idUser)
         {
-            return JsonConvert.SerializeObject(DataAccess.GetFile(idFile));
+            return JsonConvert.SerializeObject(await DataAccess.GetFile(idFile, idUser));
         }
 
         // PUT: api/Files/5/5
         [HttpPut("{id}/{key}")]
-        public void Put(string id, string key, [FromBody]FileObject file)
+        public async Task Put(string id, string key, [FromBody]FileObject file)
         {
-            DataAccess.CreateFile(id, key, file);
+            await DataAccess.CreateFile(id, key, file);
         }
 
         // DELETE: api/Files/5
         [HttpDelete("{idUser}/{key}/{idFile}")]
-        public void Delete(string idFile, string idUser, string key)
+        public async Task Delete(string idFile, string idUser, string key)
         {
-            DataAccess.DeleteFile(idUser, key, idFile);
+            await DataAccess.DeleteFile(idUser, key, idFile);
         }
     }
 }
