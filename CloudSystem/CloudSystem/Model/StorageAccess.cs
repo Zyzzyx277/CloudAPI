@@ -16,7 +16,6 @@ public class StorageAccess
     {
         Directory.CreateDirectory($"/data/content/{user.Id}");
         Directory.CreateDirectory($"/data/configs/{user.Id}");
-        Directory.CreateDirectory($"/data/users/{user.Id}");
         
         await using var wr = new StreamWriter($"/data/users/{user.Id}");
         await wr.WriteLineAsync(JsonConvert.SerializeObject(user));
