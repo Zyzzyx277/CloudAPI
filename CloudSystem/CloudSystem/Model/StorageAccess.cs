@@ -41,13 +41,13 @@ public class StorageAccess
         return users;
     }
     
-    public static async Task<IEnumerable<FileObject>> GetAllFiles()
+    public static async Task<IEnumerable<FileConfig>> GetAllFiles(string userId)
     {
-        var files = new List<FileObject>();
-        if (!Directory.Exists("/data/users")) return files;
-        foreach (var file in Directory.EnumerateFiles("/data/users"))
+        var files = new List<FileConfig>();
+        if (!Directory.Exists($"/data/configs/{userId}")) return files;
+        foreach (var file in Directory.EnumerateFiles($"/data/configs/{userId}"))
         {
-            var fileObject = JsonConvert.DeserializeObject<FileObject>(await File.ReadAllTextAsync(file));
+            var fileObject = JsonConvert.DeserializeObject<FileConfig>(await File.ReadAllTextAsync(file));
             if(fileObject is null) continue;
             files.Add(fileObject);
         }
@@ -80,7 +80,7 @@ public class StorageAccess
         File.Delete($"/data/configs/{userId}/{fileId}");
     }
 
-    private class FileConfig
+    public class FileConfig
     {
         public string Path { get; set; }
         public string UserId { get; set; }

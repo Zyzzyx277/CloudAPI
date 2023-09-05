@@ -63,9 +63,9 @@ public class DataAccess
     
     public static async Task<string> GetFileList(string id)
     {
-        var list = await StorageAccess.GetAllFiles();
+        var list = await StorageAccess.GetAllFiles(id);
 
-        return JsonConvert.SerializeObject(list.Select(el => (el.Path, el.Id)));
+        return JsonConvert.SerializeObject(list.Select(el => (el.Path, el.UserId)));
     }
 
     public static async Task CreateFile(string idUser, string key, FileObject file)
