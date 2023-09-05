@@ -76,6 +76,7 @@ public class DataAccess
         var user = User.UserDb.FirstOrDefault(p => p.Id == idUser);
         if (user is null) return;
         if (user.AuthKey != key) return;
+        
         if (FileObject.FileDb.Any(p => p.IdUser == idUser && p.Id == file.Id)) return;
         FileObject.FileDb.Add(file);
     }
