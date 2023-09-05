@@ -9,7 +9,7 @@ public class StorageAccess
         if (!Directory.Exists($"/data/content/{userId}")) return;
         Directory.Delete($"/data/content/{userId}", true);
         Directory.Delete($"/data/configs/{userId}", true);
-        File.Delete($"/data/users/{userId}");
+        File.Delete($"/data/users/{userId}.json");
     }
 
     public static async Task CreateUserDirectory(User user)
@@ -17,14 +17,14 @@ public class StorageAccess
         Directory.CreateDirectory($"/data/content/{user.Id}");
         Directory.CreateDirectory($"/data/configs/{user.Id}");
         
-        await using var wr = new StreamWriter($"/data/users/{user.Id}");
+        await using var wr = new StreamWriter($"/data/users/{user.Id}.json");
         await wr.WriteLineAsync(JsonConvert.SerializeObject(user));
     }
 
     public static async Task<User?> GetUser(string userId)
     {
-        if (!File.Exists($"/data/users/{userId}")) return null;
-        return JsonConvert.DeserializeObject<User>(await File.ReadAllTextAsync($"/data/users/{userId}"));
+        if (!File.Exists($"/data/users/{userId}.json")) return null;
+        return JsonConvert.DeserializeObject<User>(await File.ReadAllTextAsync($"/data/users/{userId}.json"));
     }
     
     public static async Task<IEnumerable<User>> GetAllUsers()
@@ -57,38 +57,40 @@ public class StorageAccess
 
     public static async Task StoreFile(FileObject file)
     {
-        await using var wr = new StreamWriter($"/data/content/{file.IdUser}/{file.Id}");
+        await using var wr = new StreamWriter($"/data/content/{file.IdUser}/{file.Id}.json");
         await wr.WriteLineAsync(file.Content);
 
-        await using var wr2 = new StreamWriter($"/data/configs/{file.IdUser}/{file.Id}");
-        await wr.WriteLineAsync(JsonConvert.SerializeObject(new FileConfig(file.IdUser, file.Path)));
+        await using var wr2 = new StreamWriter($"/data/configs/{file.IdUser}/{file.Id}.json");
+        await wr.WriteLineAsync(JsonConvert.SerializeObject(new FileConfig(file.IdUser, file.Path, file.Id)));
     }
     
     public static async Task<FileObject?> LoadFile(string userId, string fileId)
     {
-        if (!File.Exists($"/data/content/{userId}/{fileId}")) return null;
-        string content = await File.ReadAllTextAsync($"/data/content/{userId}/{fileId}");
+        if (!File.Exists($"/data/content/{userId}/{fileId}.json")) return null;
+        string content = await File.ReadAllTextAsync($"/data/content/{userId}/{fileId}.json");
         var config =
-            JsonConvert.DeserializeObject<FileConfig>(await File.ReadAllTextAsync($"/data/configs/{userId}/{fileId}"));
+            JsonConvert.DeserializeObject<FileConfig>(await File.ReadAllTextAsync($"/data/configs/{userId}/{fileId}.json"));
         return config is null ? null : new FileObject(content, userId, config.Path, fileId);
     }
 
     public static void DeleteFile(string userId, string fileId)
     {
-        if (!File.Exists($"/data/content/{userId}/{fileId}")) return;
-        File.Delete($"/data/content/{userId}/{fileId}");
-        File.Delete($"/data/configs/{userId}/{fileId}");
+        if (!File.Exists($"/data/content/{userId}/{fileId}.json")) return;
+        File.Delete($"/data/content/{userId}/{fileId}.json");
+        File.Delete($"/data/configs/{userId}/{fileId}.json");
     }
 
     public class FileConfig
     {
         public string Path { get; set; }
         public string UserId { get; set; }
+        public string FileId { get; set; }
 
-        public FileConfig(string userId, string path)
+        public FileConfig(string userId, string path, string fileID)
         {
             Path = path;
             UserId = userId;
+            FileId = fileID;
         }
     }
 }
