@@ -16,9 +16,8 @@ public class StorageAccess
     {
         Directory.CreateDirectory($"/data/content/{user.Id}");
         Directory.CreateDirectory($"/data/configs/{user.Id}");
-        
-        await using var wr = new StreamWriter($"/data/users/{user.Id}.json");
-        await wr.WriteLineAsync(JsonConvert.SerializeObject(user));
+
+        await File.WriteAllTextAsync($"/data/users/{user.Id}.json", JsonConvert.SerializeObject(user));
     }
 
     public static async Task<User?> GetUser(string userId)
@@ -57,11 +56,11 @@ public class StorageAccess
 
     public static async Task StoreFile(FileObject file)
     {
-        await using var wr = new StreamWriter($"/data/content/{file.IdUser}/{file.Id}.json");
-        await wr.WriteLineAsync(file.Content);
+        await File.WriteAllTextAsync($"/data/content/{file.IdUser}/{file.Id}.json",
+            file.Content);
 
-        await using var wr2 = new StreamWriter($"/data/configs/{file.IdUser}/{file.Id}.json");
-        await wr.WriteLineAsync(JsonConvert.SerializeObject(new FileConfig(file.IdUser, file.Path, file.Id)));
+        await File.WriteAllTextAsync($"/data/configs/{file.IdUser}/{file.Id}.json",
+            JsonConvert.SerializeObject(new FileConfig(file.IdUser, file.Path, file.Id)));
     }
     
     public static async Task<FileObject?> LoadFile(string userId, string fileId)
@@ -75,7 +74,11 @@ public class StorageAccess
 
     public static void DeleteFile(string userId, string fileId)
     {
-        if (!File.Exists($"/data/content/{userId}/{fileId}.json")) return;
+        if (!File.Exists($"/data/content/{userId}/{fileId}.json"))
+        {
+            Console.WriteLine("File Not Found");
+            return;
+        }
         File.Delete($"/data/content/{userId}/{fileId}.json");
         File.Delete($"/data/configs/{userId}/{fileId}.json");
     }

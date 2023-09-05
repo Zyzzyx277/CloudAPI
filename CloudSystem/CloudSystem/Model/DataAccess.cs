@@ -16,14 +16,13 @@ public class DataAccess
         return await StorageAccess.GetAllUsers();
     }
     
-    public static async Task<bool> CreateUser(string id, string keyHashed)
+    public static async Task CreateUser(string id, string keyHashed)
     {
-        if (await StorageAccess.GetUser(id) is not null) return false;
+        if (await StorageAccess.GetUser(id) is not null) return;
         await StorageAccess.CreateUserDirectory(new User(id, keyHashed));
-        return true;
     }
     
-    public static async Task<string?> GetPublicKey(string id)
+    private static async Task<string?> GetPublicKey(string id)
     {
         var user = await StorageAccess.GetUser(id);
         return user?.PublicKey;
@@ -71,7 +70,11 @@ public class DataAccess
     public static async Task CreateFile(string idUser, string key, FileObject file)
     {
         var user = await StorageAccess.GetUser(idUser);
-        if (!CheckAuthKey(user, key)) return;
+        if (!CheckAuthKey(user, key))
+        {
+            Console.WriteLine("Authentication failed");
+            return;
+        }
         
         if (await StorageAccess.LoadFile(idUser, file.Id) is not null) return;
         await StorageAccess.StoreFile(file);
