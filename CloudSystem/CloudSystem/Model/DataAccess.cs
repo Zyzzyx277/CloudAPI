@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 
 namespace CloudSystem.Model;
 
@@ -28,11 +26,11 @@ public class DataAccess
         return user?.PublicKey;
     }
 
-    public static async Task DeleteUser(string id, string key)
+    public static async Task<string> DeleteUser(string id, string key)
     {
         var user = await StorageAccess.GetUser(id);
-        if(CheckAuthKey(user, key)) return;
-        StorageAccess.DeleteUserDirectory(id);
+        if(!CheckAuthKey(user, key)) return "Authentication not correct";
+        return StorageAccess.DeleteUserDirectory(id);
     }
 
     private static bool CheckAuthKey(User? user, string key)
@@ -51,7 +49,8 @@ public class DataAccess
         string keyEncrypted = Cryptography.Encrypt(key, publicKey);
         var user = await StorageAccess.GetUser(id);
         if (user is null) return string.Empty;
-        user.AuthKey = new User.AuthKeyClass(new TimeSpan(0, 15, 0), DateTime.Now, keyEncrypted);
+        user.AuthKey = new User.AuthKeyClass(new TimeSpan(0, 15, 0), DateTime.Now, key);
+        await StorageAccess.UpdateUser(user);
         return keyEncrypted;
     }
 
@@ -67,23 +66,28 @@ public class DataAccess
         return JsonConvert.SerializeObject(list.Select(el => (el.Path, el.FileId)));
     }
 
-    public static async Task CreateFile(string idUser, string key, FileObject file)
+    public static async Task<string> CreateFile(string idUser, string key, string fileId, string path, Stream file)
     {
         var user = await StorageAccess.GetUser(idUser);
         if (!CheckAuthKey(user, key))
         {
-            Console.WriteLine("Authentication failed");
-            return;
+            Console.WriteLine("Auth not correct");
+            return "Auth not correct";
         }
         
-        if (await StorageAccess.LoadFile(idUser, file.Id) is not null) return;
-        await StorageAccess.StoreFile(file);
+        if (await StorageAccess.LoadFile(idUser, fileId) is not null)
+        {
+            Console.WriteLine("File already exists");
+            return "File already exists";
+        }
+        await StorageAccess.StoreFile(idUser, fileId, path, file);
+        return "";
     }
     
-    public static async Task DeleteFile(string idUser, string key, string idFile)
+    public static async Task<string> DeleteFile(string idUser, string key, string idFile)
     {
         var user = await StorageAccess.GetUser(idUser);
-        if (!CheckAuthKey(user, key)) return;
-        StorageAccess.DeleteFile(idUser, idFile);
+        if (!CheckAuthKey(user, key)) return "Auth not correct";
+        return StorageAccess.DeleteFile(idUser, idFile);
     }
 }

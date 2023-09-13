@@ -11,10 +11,22 @@ namespace CloudSystem.Controllers
     {
         // GET: api/Users
         [HttpGet]
-        public async Task<IEnumerable<string>> Get()
+        public async Task<string> Get()
         {
             var users = await DataAccess.GetUser();
-            return users.Select(JsonConvert.SerializeObject);
+            return JsonConvert.SerializeObject(users.Select(p => new UserClient(p.Id, p.PublicKey)));
+        }
+
+        private class UserClient
+        {
+            public string Id { get; set; }
+            public string PublicKey { get; set; }
+
+            public UserClient(string id, string publicKey)
+            {
+                Id = id;
+                PublicKey = publicKey;
+            }
         }
 
         // GET: api/Users/5
@@ -35,16 +47,24 @@ namespace CloudSystem.Controllers
         [HttpPut]
         public async Task<string> Put([FromBody] string publicKey)
         {
-            string id = Guid.NewGuid().ToString();
+            var users = await DataAccess.GetUser();
+            var existingIds = users.Select(p => p.Id).ToArray();
+            string id;
+            do
+            {
+                id = Guid.NewGuid().ToString();
+            } while (existingIds.Contains(id));
             await DataAccess.CreateUser(id, publicKey);
             return id;
         }
 
         // DELETE: api/Users/5
         [HttpDelete("{id}/{key}")]
-        public async Task Delete(string id, string key)
+        public async Task<IActionResult> Delete(string id, string key)
         {
-            await DataAccess.DeleteUser(id, key);
+            string status = await DataAccess.DeleteUser(id, key);
+            if (string.IsNullOrEmpty(status)) return Ok();
+            return BadRequest(status);
         }
     }
 }

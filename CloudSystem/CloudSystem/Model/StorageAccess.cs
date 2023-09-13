@@ -4,18 +4,20 @@ namespace CloudSystem.Model;
 
 public class StorageAccess
 {
-    public static void DeleteUserDirectory(string userId)
+    public static string DeleteUserDirectory(string userId)
     {
-        if (!Directory.Exists($"/data/content/{userId}")) return;
+        if (!Directory.Exists($"/data/content/{userId}")) return "User Not Found";
         Directory.Delete($"/data/content/{userId}", true);
         Directory.Delete($"/data/configs/{userId}", true);
         File.Delete($"/data/users/{userId}.json");
+        return "";
     }
 
     public static async Task CreateUserDirectory(User user)
     {
         Directory.CreateDirectory($"/data/content/{user.Id}");
         Directory.CreateDirectory($"/data/configs/{user.Id}");
+        Directory.CreateDirectory("/data/users");
 
         await File.WriteAllTextAsync($"/data/users/{user.Id}.json", JsonConvert.SerializeObject(user));
     }
@@ -24,6 +26,12 @@ public class StorageAccess
     {
         if (!File.Exists($"/data/users/{userId}.json")) return null;
         return JsonConvert.DeserializeObject<User>(await File.ReadAllTextAsync($"/data/users/{userId}.json"));
+    }
+    
+    public static async Task UpdateUser(User user)
+    {
+        if (!File.Exists($"/data/users/{user.Id}.json")) return;
+        await File.WriteAllTextAsync($"/data/users/{user.Id}.json", JsonConvert.SerializeObject(user));
     }
     
     public static async Task<IEnumerable<User>> GetAllUsers()
@@ -54,13 +62,13 @@ public class StorageAccess
         return files;
     }
 
-    public static async Task StoreFile(FileObject file)
+    public static async Task StoreFile(string userId, string fileId, string path, Stream file)
     {
-        await File.WriteAllTextAsync($"/data/content/{file.IdUser}/{file.Id}.json",
-            file.Content);
+        await using var st = new FileStream($"/data/content/{userId}/{fileId}.json", FileMode.Create);
+        await file.CopyToAsync(st);
 
-        await File.WriteAllTextAsync($"/data/configs/{file.IdUser}/{file.Id}.json",
-            JsonConvert.SerializeObject(new FileConfig(file.IdUser, file.Path, file.Id)));
+        await File.WriteAllTextAsync($"/data/configs/{userId}/{fileId}.json",
+            JsonConvert.SerializeObject(new FileConfig(userId, path, fileId)));
     }
     
     public static async Task<FileObject?> LoadFile(string userId, string fileId)
@@ -72,15 +80,16 @@ public class StorageAccess
         return config is null ? null : new FileObject(content, userId, config.Path, fileId);
     }
 
-    public static void DeleteFile(string userId, string fileId)
+    public static string DeleteFile(string userId, string fileId)
     {
         if (!File.Exists($"/data/content/{userId}/{fileId}.json"))
         {
             Console.WriteLine("File Not Found");
-            return;
+            return "File Not Found";
         }
         File.Delete($"/data/content/{userId}/{fileId}.json");
         File.Delete($"/data/configs/{userId}/{fileId}.json");
+        return "";
     }
 
     public class FileConfig

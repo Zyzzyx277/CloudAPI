@@ -1,13 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Threading.Tasks;
 using CloudSystem.Model;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.SignalR;
-using Newtonsoft.Json;
+using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Net.Http.Headers;
 
 namespace CloudSystem.Controllers
 {
@@ -22,31 +16,60 @@ namespace CloudSystem.Controllers
             return await DataAccess.GetFileList(id);
         }
 
-        // GET: api/Files/Get/5
-        /*[HttpGet("{id}")]
-        public FileObject Get(string id)
+        // GET: api/Files/Get/5/5
+        [HttpGet("{userId}/{fileId}")]
+        public IActionResult Get(string userId, string fileId)
         {
-            return DataAccess.GetFile(id);
-        }*/
-
-        [HttpPost("{idUser}")]
-        public async Task<string> Post([FromBody]string idFile, string idUser)
-        {
-            return JsonConvert.SerializeObject(await DataAccess.GetFile(idFile, idUser));
+            string filePath = $"/data/content/{userId}/{fileId}.json";
+            if (!System.IO.File.Exists(filePath)) return BadRequest("File Not Found");
+            
+            return File(System.IO.File.OpenRead(filePath), "application/octet-stream", Path.GetFileName(filePath));
         }
 
         // PUT: api/Files/5/5
-        [HttpPut("{id}/{key}")]
-        public async Task Put(string id, string key, [FromBody]FileObject file)
+        [HttpPut("{userId}/{key}/{fileId}/{path}")]
+        [DisableFormValueModelBinding]
+        [RequestSizeLimit(10L * 1024L * 1024L * 1024L)]
+        [RequestFormLimits(MultipartBodyLengthLimit = 10L * 1024L * 1024L * 1024L)]
+        public async Task<IActionResult> Put(string userId, string key, string fileId, string path)
         {
-            await DataAccess.CreateFile(id, key, file);
+            if (!MultipartRequestHelper.IsMultipartContentType(Request.ContentType))
+                return BadRequest("Not a multipart request");
+
+            var boundary = MultipartRequestHelper.GetBoundary(MediaTypeHeaderValue.Parse(Request.ContentType));
+            var reader = new MultipartReader(boundary, Request.Body);
+
+            // note: this is for a single file, you could also process multiple files
+            var section = await reader.ReadNextSectionAsync();
+
+            if (section == null)
+                return BadRequest("No sections in multipart defined");
+
+            if (!ContentDispositionHeaderValue.TryParse(section.ContentDisposition, out var contentDisposition))
+                return BadRequest("No content disposition in multipart defined");
+
+            var fileName = contentDisposition.FileNameStar.ToString();
+            if (string.IsNullOrEmpty(fileName))
+            {
+                fileName = contentDisposition.FileName.ToString();
+            }
+
+            if (string.IsNullOrEmpty(fileName))
+                return BadRequest("No filename defined.");
+
+            await using var fileStream = section.Body;
+            string status = await DataAccess.CreateFile(userId, key, fileId, path, fileStream);
+            if (string.IsNullOrEmpty(status)) return Ok();
+            return BadRequest(status);
         }
 
         // DELETE: api/Files/5
         [HttpDelete("{idUser}/{key}/{idFile}")]
-        public async Task Delete(string idFile, string idUser, string key)
+        public async Task<IActionResult> Delete(string idFile, string idUser, string key)
         {
-            await DataAccess.DeleteFile(idUser, key, idFile);
+            string status = await DataAccess.DeleteFile(idUser, key, idFile);
+            if (string.IsNullOrEmpty(status)) return Ok();
+            return BadRequest(status);
         }
     }
 }
