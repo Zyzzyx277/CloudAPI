@@ -53,11 +53,6 @@ public class DataAccess
         await StorageAccess.UpdateUser(user);
         return keyEncrypted;
     }
-
-    public static async Task<FileObject?> GetFile(string fileId, string idUser)
-    {
-        return await StorageAccess.LoadFile(idUser, fileId);
-    }
     
     public static async Task<string> GetFileList(string id)
     {
@@ -75,7 +70,7 @@ public class DataAccess
             return "Auth not correct";
         }
         
-        if (await StorageAccess.LoadFile(idUser, fileId) is not null)
+        if (StorageAccess.LoadFile(idUser, fileId))
         {
             Console.WriteLine("File already exists");
             return "File already exists";

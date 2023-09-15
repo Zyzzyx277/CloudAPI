@@ -446,10 +446,3 @@ C:\Users\koron\RiderProjects\CloudSystemGit\CloudSystem\CloudSystem\obj\Debug\ne
 C:\Users\koron\RiderProjects\CloudSystemGit\CloudSystem\CloudSystem\obj\Debug\net7.0\CloudSystem.pdb
 C:\Users\koron\RiderProjects\CloudSystemGit\CloudSystem\CloudSystem\obj\Debug\net7.0\CloudSystem.genruntimeconfig.cache
 C:\Users\koron\RiderProjects\CloudSystemGit\CloudSystem\CloudSystem\obj\Debug\net7.0\ref\CloudSystem.dll
-C:\Users\koron\RiderProjects\CloudSystemGit\CloudSystem\CloudSystem\bin\Debug\net7.0\Dapper.dll
-C:\Users\koron\RiderProjects\CloudSystemGit\CloudSystem\CloudSystem\bin\Debug\net7.0\System.Data.SqlClient.dll
-C:\Users\koron\RiderProjects\CloudSystemGit\CloudSystem\CloudSystem\bin\Debug\net7.0\runtimes\win-arm64\native\sni.dll
-C:\Users\koron\RiderProjects\CloudSystemGit\CloudSystem\CloudSystem\bin\Debug\net7.0\runtimes\win-x64\native\sni.dll
-C:\Users\koron\RiderProjects\CloudSystemGit\CloudSystem\CloudSystem\bin\Debug\net7.0\runtimes\win-x86\native\sni.dll
-C:\Users\koron\RiderProjects\CloudSystemGit\CloudSystem\CloudSystem\bin\Debug\net7.0\runtimes\unix\lib\netcoreapp2.1\System.Data.SqlClient.dll
-C:\Users\koron\RiderProjects\CloudSystemGit\CloudSystem\CloudSystem\bin\Debug\net7.0\runtimes\win\lib\netcoreapp2.1\System.Data.SqlClient.dll

@@ -20,19 +20,42 @@ namespace CloudSystem.Controllers
         [HttpGet("{userId}/{fileId}")]
         public IActionResult Get(string userId, string fileId)
         {
-            string filePath = $"/data/content/{userId}/{fileId}.json";
-            if (!System.IO.File.Exists(filePath)) return BadRequest("File Not Found");
-            
-            return File(System.IO.File.OpenRead(filePath), "application/octet-stream", Path.GetFileName(filePath));
+            try
+            {
+                StorageAccess.sem.WaitOne();
+                string filePath = $"/data/content/{userId}/{fileId}.json";
+                if (!System.IO.File.Exists(filePath)) return BadRequest("File Not Found");
+                return File(System.IO.File.OpenRead(filePath), "application/octet-stream", Path.GetFileName(filePath));
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                // Handle UnauthorizedAccessException here
+                Console.WriteLine($"UnauthorizedAccessException: {ex.Message}");
+                return BadRequest("IO Error");
+            }
+            catch (IOException ex)
+            {
+                // Handle IOException here
+                Console.WriteLine($"IOException: {ex.Message}");
+                return BadRequest("IO Error");
+            }
+            finally
+            {
+                StorageAccess.sem.Release();
+            }
         }
 
         // PUT: api/Files/5/5
-        [HttpPut("{userId}/{key}/{fileId}/{path}")]
+        [HttpPut("{userId}/{fileId}")]
         [DisableFormValueModelBinding]
         [RequestSizeLimit(10L * 1024L * 1024L * 1024L)]
         [RequestFormLimits(MultipartBodyLengthLimit = 10L * 1024L * 1024L * 1024L)]
-        public async Task<IActionResult> Put(string userId, string key, string fileId, string path)
+        public async Task<IActionResult> Put(string userId, string fileId)
         {
+            string? path = Request.Headers["path"];
+            string? key = Request.Headers["key"];
+            if (key is null || path is null) return BadRequest("Property not set");
+            
             if (!MultipartRequestHelper.IsMultipartContentType(Request.ContentType))
                 return BadRequest("Not a multipart request");
 
@@ -64,9 +87,12 @@ namespace CloudSystem.Controllers
         }
 
         // DELETE: api/Files/5
-        [HttpDelete("{idUser}/{key}/{idFile}")]
-        public async Task<IActionResult> Delete(string idFile, string idUser, string key)
+        [HttpDelete("{idUser}/{idFile}")]
+        public async Task<IActionResult> Delete(string idFile, string idUser)
         {
+            string? key = Request.Headers["key"];
+            if (key is null) return BadRequest("Key not set");
+            
             string status = await DataAccess.DeleteFile(idUser, key, idFile);
             if (string.IsNullOrEmpty(status)) return Ok();
             return BadRequest(status);

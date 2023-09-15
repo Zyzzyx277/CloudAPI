@@ -59,9 +59,11 @@ namespace CloudSystem.Controllers
         }
 
         // DELETE: api/Users/5
-        [HttpDelete("{id}/{key}")]
-        public async Task<IActionResult> Delete(string id, string key)
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(string id)
         {
+            string? key = Request.Headers["key"];
+            if (key is null) return BadRequest("Key not set");
             string status = await DataAccess.DeleteUser(id, key);
             if (string.IsNullOrEmpty(status)) return Ok();
             return BadRequest(status);

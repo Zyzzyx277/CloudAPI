@@ -1,3 +1,4 @@
+using System.Net;
 using CloudSystem.Model;
 using Microsoft.AspNetCore.Http.Features;
 
@@ -13,6 +14,7 @@ builder.Services.Configure<FormOptions>(options =>
 {
     options.MultipartBodyLengthLimit = long.MaxValue; // Set maximum request size limit
 });
+
 
 builder.Services.AddRazorPages(options =>
 {
@@ -32,10 +34,10 @@ builder.Services.AddRazorPages(options =>
             });
 });
 
-/*builder.Services.AddHttpsRedirection(options =>
+builder.Services.AddHttpsRedirection(options =>
 {
     options.HttpsPort = 443; // Set the HTTPS port to use for redirection
-});*/
+});
 
 var app = builder.Build();
 
