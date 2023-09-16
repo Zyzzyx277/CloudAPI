@@ -1,4 +1,5 @@
 using System.Net;
+using System.Security.Cryptography.X509Certificates;
 using CloudSystem.Model;
 using Microsoft.AspNetCore.Http.Features;
 
@@ -14,6 +15,17 @@ builder.Services.Configure<FormOptions>(options =>
 {
     options.MultipartBodyLengthLimit = long.MaxValue; // Set maximum request size limit
 });
+
+/*builder.WebHost.UseKestrel(serverOptions =>
+{
+    serverOptions.Listen(IPAddress.Loopback, 5001,
+        listenOptions =>
+        {
+            listenOptions.UseHttps(AppDomain.CurrentDomain.BaseDirectory + 
+                                   "..\\..\\..\\Certificates\\mycert.pfx","");
+        });
+
+});*/
 
 
 builder.Services.AddRazorPages(options =>
@@ -34,10 +46,10 @@ builder.Services.AddRazorPages(options =>
             });
 });
 
-builder.Services.AddHttpsRedirection(options =>
+/*builder.Services.AddHttpsRedirection(options =>
 {
     options.HttpsPort = 443; // Set the HTTPS port to use for redirection
-});
+});*/
 
 var app = builder.Build();
 
@@ -48,6 +60,8 @@ app.UseSwaggerUI();
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
+
+app.UseAuthentication();
 
 app.MapControllers();
 
