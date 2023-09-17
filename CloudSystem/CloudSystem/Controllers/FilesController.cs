@@ -54,7 +54,10 @@ namespace CloudSystem.Controllers
         {
             string? path = Request.Headers["path"];
             string? key = Request.Headers["key"];
-            if (key is null || path is null) return BadRequest("Property not set");
+            string? compress = Request.Headers["compress"];
+            if (key is null || path is null || compress is null) return BadRequest("Property not set");
+            bool compressBool;
+            if (!bool.TryParse(compress, out compressBool)) return BadRequest("Wrong Format of Argument");
             
             if (!MultipartRequestHelper.IsMultipartContentType(Request.ContentType))
                 return BadRequest("Not a multipart request");
@@ -81,7 +84,7 @@ namespace CloudSystem.Controllers
                 return BadRequest("No filename defined.");
 
             await using var fileStream = section.Body;
-            string status = await DataAccess.CreateFile(userId, key, fileId, path, fileStream);
+            string status = await DataAccess.CreateFile(userId, key, fileId, path, compressBool, fileStream);
             if (string.IsNullOrEmpty(status)) return Ok();
             return BadRequest(status);
         }

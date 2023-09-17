@@ -58,10 +58,24 @@ public class DataAccess
     {
         var list = await StorageAccess.GetAllFiles(id);
 
-        return JsonConvert.SerializeObject(list.Select(el => (el.Path, el.FileId)));
+        return JsonConvert.SerializeObject(list.Select(el => new ConfigClient(el.Path, el.FileId, el.Compress)));
     }
 
-    public static async Task<string> CreateFile(string idUser, string key, string fileId, string path, Stream file)
+    private class ConfigClient
+    {
+        public ConfigClient(string path, string fileId, bool compressed)
+        {
+            Path = path;
+            FileId = fileId;
+            Compressed = compressed;
+        }
+
+        public string Path { get; set; }
+        public string FileId { get; set; }
+        public bool Compressed { get; set; }
+    }
+
+    public static async Task<string> CreateFile(string idUser, string key, string fileId, string path, bool compress, Stream file)
     {
         var user = await StorageAccess.GetUser(idUser);
         if (!CheckAuthKey(user, key))
@@ -75,7 +89,7 @@ public class DataAccess
             Console.WriteLine("File already exists");
             return "File already exists";
         }
-        await StorageAccess.StoreFile(idUser, fileId, path, file);
+        await StorageAccess.StoreFile(idUser, fileId, path, compress, file);
         return "";
     }
     

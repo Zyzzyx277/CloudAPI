@@ -178,7 +178,7 @@ public class StorageAccess
 
         // ... other methods ...
 
-        public static async Task StoreFile(string userId, string fileId, string path, Stream file)
+        public static async Task StoreFile(string userId, string fileId, string path, bool compress, Stream file)
         {
             try
             {
@@ -189,7 +189,7 @@ public class StorageAccess
                 }
 
                 await File.WriteAllTextAsync($"/data/configs/{userId}/{fileId}.json",
-                    JsonConvert.SerializeObject(new FileConfig(userId, path, fileId)));
+                    JsonConvert.SerializeObject(new FileConfig(userId, path, fileId, compress)));
                 if(onLinux)
                 {
                     File.SetUnixFileMode($"/data/configs/{userId}/{fileId}.json", fileAccessPermissions);
@@ -273,12 +273,14 @@ public class StorageAccess
             public string Path { get; set; }
             public string UserId { get; set; }
             public string FileId { get; set; }
+            public bool Compress { get; set; }
 
-            public FileConfig(string userId, string path, string fileID)
+            public FileConfig(string userId, string path, string fileId, bool compress)
             {
                 Path = path;
                 UserId = userId;
-                FileId = fileID;
+                FileId = fileId;
+                Compress = compress;
             }
         }
 }
