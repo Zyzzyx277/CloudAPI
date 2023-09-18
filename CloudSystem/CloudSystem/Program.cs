@@ -29,7 +29,7 @@ builder.WebHost.UseKestrel((context, options) =>
     else
     {
         // For production, use a CA-issued certificate
-        options.ListenAnyIP(5001, listenOptions =>
+        options.ListenAnyIP(443, listenOptions =>
         {
             listenOptions.UseHttps("/certificates/mycert.pfx", "");
         }); // HTTPS

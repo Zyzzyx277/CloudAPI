@@ -9,5 +9,7 @@ services:
       - "80:80"
     volumes:
       - cloudStorage:/data
+      - ./Certificates/mycert.pfx:/certificates/mycert.pfx
+    restart: unless-stopped
 volumes:
   cloudStorage:
