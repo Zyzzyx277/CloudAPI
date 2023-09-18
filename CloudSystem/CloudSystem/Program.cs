@@ -1,5 +1,3 @@
-using System.Net;
-using System.Security.Cryptography.X509Certificates;
 using CloudSystem.Model;
 using Microsoft.AspNetCore.Http.Features;
 
@@ -16,16 +14,27 @@ builder.Services.Configure<FormOptions>(options =>
     options.MultipartBodyLengthLimit = long.MaxValue; // Set maximum request size limit
 });
 
-/*builder.WebHost.UseKestrel(serverOptions =>
+builder.WebHost.UseKestrel((context, options) =>
 {
-    serverOptions.Listen(IPAddress.Loopback, 5001,
-        listenOptions =>
+    if (context.HostingEnvironment.IsDevelopment())
+    {
+        // For development, use a self-signed certificate
+        options.ListenAnyIP(5000); // HTTP
+        options.ListenAnyIP(5001, listenOptions =>
         {
-            listenOptions.UseHttps(AppDomain.CurrentDomain.BaseDirectory + 
-                                   "..\\..\\..\\Certificates\\mycert.pfx","");
-        });
-
-});*/
+            listenOptions.UseHttps(AppDomain.CurrentDomain.BaseDirectory
+                + "..\\..\\..\\Certificates\\mycert.pfx", "");
+        }); // HTTPS
+    }
+    else
+    {
+        // For production, use a CA-issued certificate
+        options.ListenAnyIP(5001, listenOptions =>
+        {
+            listenOptions.UseHttps("/certificates/mycert.pfx", "");
+        }); // HTTPS
+    }
+});
 
 
 builder.Services.AddRazorPages(options =>
@@ -45,11 +54,6 @@ builder.Services.AddRazorPages(options =>
                     new DisableFormValueModelBindingAttribute());
             });
 });
-
-/*builder.Services.AddHttpsRedirection(options =>
-{
-    options.HttpsPort = 443; // Set the HTTPS port to use for redirection
-});*/
 
 var app = builder.Build();
 
