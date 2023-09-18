@@ -1,6 +1,5 @@
 using CloudSystem.Model;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 
 namespace CloudSystem.Controllers

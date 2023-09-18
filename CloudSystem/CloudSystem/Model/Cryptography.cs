@@ -3,7 +3,7 @@ using System.Text;
 
 namespace CloudSystem.Model;
 
-public class Cryptography
+public static class Cryptography
 {
     public static string Encrypt(string textToEncrypt, string publicKeyString)
     {
@@ -24,24 +24,21 @@ public class Cryptography
     }
     public static string Decrypt(string textToDecrypt, string privateKeyString)
     {
-
-        using (var rsa = new RSACryptoServiceProvider(2048))
+        using var rsa = new RSACryptoServiceProvider(2048);
+        try
         {
-            try
-            {
 
-                // server decrypting data with private key                    
-                rsa.ImportFromPem(privateKeyString);
+            // server decrypting data with private key                    
+            rsa.ImportFromPem(privateKeyString);
 
-                var resultBytes = Convert.FromBase64String(textToDecrypt);
-                var decryptedBytes = rsa.Decrypt(resultBytes, true);
-                var decryptedData = Encoding.UTF8.GetString(decryptedBytes);
-                return decryptedData.ToString();
-            }
-            finally
-            {
-                rsa.PersistKeyInCsp = false;
-            }
+            var resultBytes = Convert.FromBase64String(textToDecrypt);
+            var decryptedBytes = rsa.Decrypt(resultBytes, true);
+            var decryptedData = Encoding.UTF8.GetString(decryptedBytes);
+            return decryptedData;
+        }
+        finally
+        {
+            rsa.PersistKeyInCsp = false;
         }
     }
     

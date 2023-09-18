@@ -22,7 +22,7 @@ namespace CloudSystem.Controllers
         {
             try
             {
-                StorageAccess.sem.WaitOne();
+                StorageAccess.Sem.WaitOne();
                 string filePath = $"/data/content/{userId}/{fileId}.json";
                 if (!System.IO.File.Exists(filePath)) return BadRequest("File Not Found");
                 return File(System.IO.File.OpenRead(filePath), "application/octet-stream", Path.GetFileName(filePath));
@@ -41,7 +41,7 @@ namespace CloudSystem.Controllers
             }
             finally
             {
-                StorageAccess.sem.Release();
+                StorageAccess.Sem.Release();
             }
         }
 
@@ -56,10 +56,9 @@ namespace CloudSystem.Controllers
             string? key = Request.Headers["key"];
             string? compress = Request.Headers["compress"];
             if (key is null || path is null || compress is null) return BadRequest("Property not set");
-            bool compressBool;
-            if (!bool.TryParse(compress, out compressBool)) return BadRequest("Wrong Format of Argument");
+            if (!bool.TryParse(compress, out var compressBool)) return BadRequest("Wrong Format of Argument");
             
-            if (!MultipartRequestHelper.IsMultipartContentType(Request.ContentType))
+            if (Request.ContentType != null && !MultipartRequestHelper.IsMultipartContentType(Request.ContentType))
                 return BadRequest("Not a multipart request");
 
             var boundary = MultipartRequestHelper.GetBoundary(MediaTypeHeaderValue.Parse(Request.ContentType));

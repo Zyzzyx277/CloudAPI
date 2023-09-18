@@ -3,25 +3,25 @@ using Newtonsoft.Json;
 
 namespace CloudSystem.Model;
 
-public class StorageAccess
+public static class StorageAccess
 {
-    public static Semaphore sem = new (1, 1);
-    private static UnixFileMode fileAccessPermissions = UnixFileMode.GroupRead | UnixFileMode.OtherRead 
-                                                                               | UnixFileMode.UserRead
-                                                                               | UnixFileMode.UserWrite;
-    private static bool onLinux = RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
-    
+    public static readonly Semaphore Sem = new (1, 1);
+    private static readonly UnixFileMode FileAccessPermissions = UnixFileMode.GroupRead | UnixFileMode.OtherRead 
+                                                                                        | UnixFileMode.UserRead
+                                                                                        | UnixFileMode.UserWrite;
+    private static readonly bool OnLinux = RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
+
     public static async Task CreateUserDirectory(User user)
     {
         try
         {
-            sem.WaitOne();
+            Sem.WaitOne();
             Directory.CreateDirectory($"/data/content/{user.Id}");
             Directory.CreateDirectory($"/data/configs/{user.Id}");
             Directory.CreateDirectory("/data/users");
 
             await File.WriteAllTextAsync($"/data/users/{user.Id}.json", JsonConvert.SerializeObject(user));
-            if(onLinux) File.SetUnixFileMode($"/data/users/{user.Id}.json", fileAccessPermissions);
+            if(OnLinux) File.SetUnixFileMode($"/data/users/{user.Id}.json", FileAccessPermissions);
         }
         catch (UnauthorizedAccessException ex)
         {
@@ -35,7 +35,7 @@ public class StorageAccess
         }
         finally
         {
-            sem.Release();
+            Sem.Release();
         }
     }
 
@@ -43,7 +43,7 @@ public class StorageAccess
     {
         try
         {
-            sem.WaitOne();
+            Sem.WaitOne();
             if (!File.Exists($"/data/users/{userId}.json")) return null;
 
             var data = JsonConvert.DeserializeObject<User>(await File.ReadAllTextAsync($"/data/users/{userId}.json"));
@@ -51,7 +51,7 @@ public class StorageAccess
         }
         finally
         {
-            sem.Release();
+            Sem.Release();
         }
     }
     
@@ -59,14 +59,14 @@ public class StorageAccess
     {
         try
         {
-            sem.WaitOne();
+            Sem.WaitOne();
             if (!File.Exists($"/data/users/{user.Id}.json")) return;
 
             await File.WriteAllTextAsync($"/data/users/{user.Id}.json", JsonConvert.SerializeObject(user));
         }
         finally
         {
-            sem.Release();
+            Sem.Release();
         }
     }
     
@@ -74,7 +74,7 @@ public class StorageAccess
     {
         try
         {
-            sem.WaitOne();
+            Sem.WaitOne();
             var users = new List<User>();
             if (!Directory.Exists("/data/users")) return users;
 
@@ -89,7 +89,7 @@ public class StorageAccess
         }
         finally
         {
-            sem.Release();
+            Sem.Release();
         }
     }
     
@@ -97,7 +97,7 @@ public class StorageAccess
     {
         try
         {
-            sem.WaitOne();
+            Sem.WaitOne();
             var files = new List<FileConfig>();
             if (!Directory.Exists($"/data/configs/{userId}")) return files;
             foreach (var file in Directory.EnumerateFiles($"/data/configs/{userId}"))
@@ -110,7 +110,7 @@ public class StorageAccess
         }
         finally
         {
-            sem.Release();
+            Sem.Release();
         }
     }
 
@@ -118,12 +118,17 @@ public class StorageAccess
         {
             try
             {
-                sem.WaitOne();
+                Sem.WaitOne();
                 if (!Directory.Exists("/data")) return;
 
                 foreach (var directory in Directory.GetDirectories("/data"))
                 {
                     Directory.Delete(directory, true);
+                }
+
+                foreach (var file in Directory.GetFiles("/data"))
+                {
+                    File.Delete(file);
                 }
             }
             catch (UnauthorizedAccessException ex)
@@ -138,7 +143,7 @@ public class StorageAccess
             }
             finally
             {
-                sem.Release();
+                Sem.Release();
             }
         }
 
@@ -146,7 +151,7 @@ public class StorageAccess
         {
             try
             {
-                sem.WaitOne();
+                Sem.WaitOne();
                 string status = string.Empty;
                 if (!Directory.Exists($"/data/content/{userId}")) status = "User Not Found";
                 else Directory.Delete($"/data/content/{userId}", true);
@@ -172,7 +177,7 @@ public class StorageAccess
             }
             finally
             {
-                sem.Release();
+                Sem.Release();
             }
         }
 
@@ -182,7 +187,7 @@ public class StorageAccess
         {
             try
             {
-                sem.WaitOne();
+                Sem.WaitOne();
                 await using (var st = new FileStream($"/data/content/{userId}/{fileId}.json", FileMode.Create))
                 {
                     await file.CopyToAsync(st);
@@ -190,10 +195,10 @@ public class StorageAccess
 
                 await File.WriteAllTextAsync($"/data/configs/{userId}/{fileId}.json",
                     JsonConvert.SerializeObject(new FileConfig(userId, path, fileId, compress)));
-                if(onLinux)
+                if(OnLinux)
                 {
-                    File.SetUnixFileMode($"/data/configs/{userId}/{fileId}.json", fileAccessPermissions);
-                    File.SetUnixFileMode($"/data/content/{userId}/{fileId}.json", fileAccessPermissions);
+                    File.SetUnixFileMode($"/data/configs/{userId}/{fileId}.json", FileAccessPermissions);
+                    File.SetUnixFileMode($"/data/content/{userId}/{fileId}.json", FileAccessPermissions);
                 }
             }
             catch (UnauthorizedAccessException ex)
@@ -208,7 +213,7 @@ public class StorageAccess
             }
             finally
             {
-                sem.Release();
+                Sem.Release();
             }
         }
 
@@ -216,7 +221,7 @@ public class StorageAccess
         {
             try
             {
-                sem.WaitOne();
+                Sem.WaitOne();
                 return File.Exists($"/data/content/{userId}/{fileId}.json");
             }
             catch (UnauthorizedAccessException ex)
@@ -233,7 +238,7 @@ public class StorageAccess
             }
             finally
             {
-                sem.Release();
+                Sem.Release();
             }
         }
 
@@ -241,7 +246,7 @@ public class StorageAccess
         {
             try
             {
-                sem.WaitOne();
+                Sem.WaitOne();
                 string status = string.Empty;
                 if (!File.Exists($"/data/content/{userId}/{fileId}.json")) status = "File Not Found";
                 else File.Delete($"/data/content/{userId}/{fileId}.json");
@@ -264,7 +269,7 @@ public class StorageAccess
             }
             finally
             {
-                sem.Release();
+                Sem.Release();
             }
         }
 

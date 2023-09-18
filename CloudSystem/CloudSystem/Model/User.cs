@@ -12,6 +12,7 @@ public class User
     public string Id { get; set; }
     public string PublicKey { get; set; }
     public AuthKeyClass? AuthKey { get; set; }
+    public HashSet<DateTime> Tries { get; } = new();
 
     public class AuthKeyClass
     {
